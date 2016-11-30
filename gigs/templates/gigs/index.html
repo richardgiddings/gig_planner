@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+
+{% block header %}
+<div class="page-header">
+    <h1>Goodgym Giggers</h1>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="row row--margin-bottom">
+    <div class="col-xs-12">
+        <form action="{% url 'gigs:add_gig' %}" method="get" class="form-align">
+            <input type="submit" value="Add a gig" class="btn btn-warning"/>
+        </form>
+    </div>
+</div>
+{% if gig_list %}
+    {% for gig in gig_list %}
+    <div class="row">
+        <div class="col-xs-12">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <strong>{{ gig.act_name }}</strong> at {{ gig.gig_venue }}
+                </div>
+                <div class="panel-body">
+                    <p>Starts at {{ gig.gig_time }} on {{ gig.gig_date | date:"jS M Y" }}.</p>
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Signed up</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                             <tr>
+                                <td>{{ gig.attendees |linebreaks }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="panel-footer">
+                    <form action="{% url 'gigs:delete_gig' gig.id %}" method="get" class="form-align">
+                        <input type="submit" value="Delete" class="btn btn-danger btn-sm btn--float"/>
+                    </form>
+                    <form action="{% url 'gigs:edit_gig' gig.id %}" method="get" class="form-align">
+                        <input type="submit" value="Edit" class="btn btn-warning btn-sm btn--float btn--margin-right"/>
+                    </form>
+                    <a class="btn btn-primary btn-sm" href="{{ gig.gig_url }}" target="_blank" role="button">Gig website</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+{% else %}
+    <div class="row">
+        <div class="col-xs-12">
+            There are no gigs yet.
+        </div>
+    </div>
+{% endif %}
+</div>
+
+{% endblock %}

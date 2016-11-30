@@ -1,0 +1,25 @@
+.panel {
+    border: solid 1px;
+}
+
+.panel > .panel-heading {
+    background-image: none;
+    background-color: red;
+    color: white;
+}
+
+.btn--float {
+    float: right;
+}
+
+.btn--margin-right {
+    margin-right: 10px;
+}
+
+.row--margin-bottom {
+    margin-bottom: 10px;
+}
+
+.row--margin-top {
+    margin-top: 10px;
+}
