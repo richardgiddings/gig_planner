@@ -11,9 +11,12 @@ class GigForm(forms.ModelForm):
         fields = '__all__'
 
         widgets={
-        'gig_date': DateTimePicker(options={"format": "YYYY-MM-DD",
-                                            "pickTime": False}),
-        'gig_time': DateTimePicker(options={"format":"HH:mm", "pickDate":False})
+        'gig_date': DateTimePicker(
+            options={"format": "YYYY-MM-DD", "pickTime": False},
+            attrs={'placeholder': 'Use the button to the right to enter a date.'}),
+        'gig_time': DateTimePicker(
+            options={"format":"HH:mm", "pickDate":False},
+            attrs={'placeholder': 'Use the button to the right to enter a time.'})
         }
 
     def __init__(self, *args, **kwargs):
