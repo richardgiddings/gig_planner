@@ -25,6 +25,13 @@
                 </div>
                 <div class="panel-body">
                     <p>Starts at {{ gig.gig_time }} on {{ gig.gig_date | date:"jS M Y" }}.</p>
+                    <p>
+                        {% if gig.meeting_point %}
+                            Meeting point: {{ gig.meeting_point }}
+                        {% else %}
+                            No meeting point has been specified.
+                        {% endif %}
+                    </p>
                     <table class="table">
                         <thead>
                             <tr>
@@ -33,7 +40,13 @@
                         </thead>
                         <tbody>
                              <tr>
-                                <td>{{ gig.attendees |linebreaks }}</td>
+                                <td>
+                                    {% if gig.attendees %}
+                                        {{ gig.attendees |linebreaks }}
+                                    {% else %}
+                                        No one has signed up yet. Be the first!
+                                    {% endif %}
+                                </td>
                             </tr>
                         </tbody>
                     </table>

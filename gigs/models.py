@@ -19,8 +19,11 @@ class Gig(models.Model):
 
     gig_date = models.DateField(help_text="The date of the gig.")
 
-    attendees = models.TextField(max_length=500,
-                                 help_text="Enter attendees here.")
+    meeting_point = models.CharField(max_length=50, blank=True,
+                                     help_text="Enter a meeing point (optional).")
+
+    attendees = models.TextField(max_length=500, blank=True,
+                                 help_text="Enter attendees here (optional).")
 
     def __str__(self):
         return self.act_name

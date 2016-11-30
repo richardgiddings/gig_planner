@@ -6,11 +6,13 @@ from django.utils import timezone
 """
 Helper method to add a gig.
 """
-def _add_gig(act_name, gig_url, gig_venue, gig_time, gig_date, attendees):
+def _add_gig(act_name, gig_url, gig_venue, gig_time, gig_date, 
+             meeting_point, attendees):
 
     Gig.objects.create(act_name=act_name, gig_url=gig_url,
                        gig_venue=gig_venue, gig_time=gig_time,
-                       gig_date=gig_date, attendees=attendees)
+                       gig_date=gig_date, meeting_point=meeting_point,
+                       attendees=attendees)
 
 
 class IndexViewTests(TestCase):
@@ -24,8 +26,8 @@ class IndexViewTests(TestCase):
         _add_gig(
             'Human League', 
             'https://m.ticketmaster.co.uk/event/1F004F828CF62BFB', 
-            'Colston Hall', '19:00',
-            timezone.now(), 'David Guest Jon Trace Caroline Wilson Kim Dowsett')
+            'Colston Hall', '19:00', timezone.now(), 'Vivo',
+            'David Guest Jon Trace Caroline Wilson Kim Dowsett')
 
         response = self.client.get(reverse('gigs:index'))
         self.assertEqual(response.status_code, 200)
@@ -50,7 +52,7 @@ class AddViewTests(TestCase):
                     'gig_url': 'https://m.ticketmaster.co.uk/event/1F004F828CF62BFB',
                     'gig_venue': 'O2 Academy, Bristol', 
                     'gig_time': '20:00',
-                    'gig_date': '2016-05-01', 
+                    'gig_date': '2016-05-01', 'meeting_point': '',
                     'attendees': 'David Guest Richard Giddings'},
                     follow=True
         )
@@ -75,8 +77,8 @@ class EditViewTests(TestCase):
         _add_gig(
             'Human League', 
             'https://m.ticketmaster.co.uk/event/1F004F828CF62BFB', 
-            'Colston Hall', '19:00',
-            timezone.now(), 'David Guest Jon Trace Caroline Wilson Kim Dowsett')
+            'Colston Hall', '19:00', timezone.now(), 'Folk House',
+            'David Guest Jon Trace Caroline Wilson Kim Dowsett')
 
 
     def test_editing_a_gig_screen(self):
@@ -129,8 +131,8 @@ class DeleteViewTests(TestCase):
         _add_gig(
             'Human League', 
             'https://m.ticketmaster.co.uk/event/1F004F828CF62BFB', 
-            'Colston Hall', '19:00',
-            timezone.now(), 'David Guest Jon Trace Caroline Wilson Kim Dowsett')
+            'Colston Hall', '19:00', 
+            timezone.now(), '', '')
         gig = Gig.objects.first()
 
         response = self.client.get(reverse('gigs:delete_gig', kwargs={'pk': gig.id}))
@@ -141,8 +143,8 @@ class DeleteViewTests(TestCase):
         _add_gig(
             'Human League', 
             'https://m.ticketmaster.co.uk/event/1F004F828CF62BFB', 
-            'Colston Hall', '19:00',
-            timezone.now(), 'David Guest Jon Trace Caroline Wilson Kim Dowsett')
+            'Colston Hall', '19:00', timezone.now(),
+            'Home', 'David Guest Jon Trace Caroline Wilson Kim Dowsett')
         gig = Gig.objects.first()
 
         self.assertEqual(Gig.objects.count(), 1)
@@ -156,8 +158,8 @@ class DeleteViewTests(TestCase):
         _add_gig(
             'Human League', 
             'https://m.ticketmaster.co.uk/event/1F004F828CF62BFB', 
-            'Colston Hall', '19:00',
-            timezone.now(), 'David Guest Jon Trace Caroline Wilson Kim Dowsett')
+            'Colston Hall', '19:00', timezone.now(),
+            'Work', 'David Guest Jon Trace Caroline Wilson Kim Dowsett')
         gig = Gig.objects.first()
 
         response = self.client.post(reverse('gigs:delete_gig', 
