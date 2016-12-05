@@ -6,3 +6,4 @@ Currently requires:
 
 - A (Postgres) database to store the gigs.
 - bootstrap3_datetime https://github.com/nkunihiko/django-bootstrap3-datetimepicker
+- pytz
