@@ -4,12 +4,18 @@ from .forms import GigForm
 from django.views.generic.edit import DeleteView
 from django.http import HttpResponseRedirect
 from django.core.urlresolvers import reverse_lazy, reverse
+from datetime import timedelta
+from django.utils import timezone
+from django.conf import settings
 
 def index(request):
     """
     Return a list of current gigs to the index page.
+    Filter out those more than 7 days old.
     """
-    gig_list = Gig.objects.order_by('gig_date')
+    days_threshold = timezone.now() - timedelta(days=settings.FILTER_DAYS)
+    gig_list = Gig.objects.filter(gig_date__gt=days_threshold)
+    gig_list = gig_list.order_by('gig_date')
 
     return render_to_response("gigs/index.html", { 
             "gig_list": gig_list,

@@ -1,7 +1,9 @@
 from django.test import TestCase
 from .models import Gig
 from django.core.urlresolvers import reverse
+from datetime import timedelta
 from django.utils import timezone
+from django.conf import settings
 
 """
 Helper method to add a gig.
@@ -27,7 +29,7 @@ class IndexViewTests(TestCase):
             'Human League', 
             'https://m.ticketmaster.co.uk/event/1F004F828CF62BFB', 
             'Colston Hall', '19:00', timezone.now(), 'Vivo',
-            'David Guest Jon Trace Caroline Wilson Kim Dowsett')
+            'David Turnbull Jon Wilson')
 
         response = self.client.get(reverse('gigs:index'))
         self.assertEqual(response.status_code, 200)
@@ -36,6 +38,33 @@ class IndexViewTests(TestCase):
         self.assertContains(response, '7 p.m.')
         self.assertContains(response, 'Wilson')
 
+    def test_index_with_old_gig(self):
+        # add a gig that should be shown
+        _add_gig(
+            'Human League', 
+            'https://m.ticketmaster.co.uk/event/1F004F828CF62BFB', 
+            'Colston Hall', '19:00', 
+            timezone.now()  - timedelta(days=settings.FILTER_DAYS-1), 
+            'Vivo', 'David Turnbull Jon Wilson')
+
+        # add a gig that should not be shown
+        _add_gig(
+            'The Cure', 
+            'https://m.ticketmaster.co.uk/event/1F004F828CF62BFB', 
+            'The Louisiana', '19:00', 
+            timezone.now() - timedelta(days=settings.FILTER_DAYS), 
+            'The Hatchet', 'David Turnbull Jon Wilson')
+
+        # there will still be two gigs on the database 
+        # but one will be filtered out
+        self.assertEqual(Gig.objects.count(), 2)
+
+        response = self.client.get(reverse('gigs:index'))
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'gigs/index.html')
+
+        self.assertContains(response, 'Human League')
+        self.assertNotContains(response, 'The Cure')
 
 class AddViewTests(TestCase):
 
@@ -45,6 +74,9 @@ class AddViewTests(TestCase):
         self.assertTemplateUsed(response, 'gigs/gig.html')
 
     def test_adding_a_gig_save(self):
+
+        date_now = timezone.now().strftime("%Y-%m-%d")
+
         response = self.client.post(
                 reverse('gigs:add_gig'),
                     data={
@@ -52,10 +84,11 @@ class AddViewTests(TestCase):
                     'gig_url': 'https://m.ticketmaster.co.uk/event/1F004F828CF62BFB',
                     'gig_venue': 'O2 Academy, Bristol', 
                     'gig_time': '20:00',
-                    'gig_date': '2016-05-01', 'meeting_point': '',
-                    'attendees': 'David Guest Richard Giddings'},
+                    'gig_date': date_now, 'meeting_point': '',
+                    'attendees': 'David Turnbull Richard Giddings'},
                     follow=True
         )
+
         self.assertEqual(Gig.objects.count(), 1)
         self.assertQuerysetEqual(response.context['gig_list'],['<Gig: The Cure>'])
         self.assertContains(response, 'Richard Giddings')
@@ -78,7 +111,7 @@ class EditViewTests(TestCase):
             'Human League', 
             'https://m.ticketmaster.co.uk/event/1F004F828CF62BFB', 
             'Colston Hall', '19:00', timezone.now(), 'Folk House',
-            'David Guest Jon Trace Caroline Wilson Kim Dowsett')
+            'David Turnbull Jon Wilson')
 
 
     def test_editing_a_gig_screen(self):
@@ -87,7 +120,7 @@ class EditViewTests(TestCase):
 
         response = self.client.get(reverse('gigs:edit_gig', args=(gig.id,)))
         self.assertContains(response, 'Human League')
-        self.assertContains(response, 'Jon Trace')
+        self.assertContains(response, 'Jon Wilson')
 
     def test_editing_a_gig_save(self):
 
@@ -97,7 +130,6 @@ class EditViewTests(TestCase):
         form = response.context['form']
         data = form.initial
         data['act_name'] = 'The Pogues'
-        data['gig_date'] = '2016-01-10'
 
         response = self.client.post(reverse('gigs:edit_gig', 
                                     kwargs={'gig_id': gig.id}), 
@@ -114,7 +146,6 @@ class EditViewTests(TestCase):
         form = response.context['form']
         data = form.initial
         data['act_name'] = 'The Pogues'
-        data['gig_date'] = '2016-01-10'
         data['cancel'] = 'Cancel' # cancel the edit
 
         response = self.client.post(reverse('gigs:edit_gig', 
@@ -144,7 +175,7 @@ class DeleteViewTests(TestCase):
             'Human League', 
             'https://m.ticketmaster.co.uk/event/1F004F828CF62BFB', 
             'Colston Hall', '19:00', timezone.now(),
-            'Home', 'David Guest Jon Trace Caroline Wilson Kim Dowsett')
+            'Home', 'David Turnbull Jon Wilson')
         gig = Gig.objects.first()
 
         self.assertEqual(Gig.objects.count(), 1)
@@ -159,7 +190,7 @@ class DeleteViewTests(TestCase):
             'Human League', 
             'https://m.ticketmaster.co.uk/event/1F004F828CF62BFB', 
             'Colston Hall', '19:00', timezone.now(),
-            'Work', 'David Guest Jon Trace Caroline Wilson Kim Dowsett')
+            'Work', 'David Turnbull Jon Wilson')
         gig = Gig.objects.first()
 
         response = self.client.post(reverse('gigs:delete_gig', 
