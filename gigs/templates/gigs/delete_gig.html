@@ -4,11 +4,10 @@
 <div class="row row--margin-top">
     <div class="col-xs-12">
         <form method="post" class="form-horizontal">{% csrf_token %}
-        	<div class="form-group text-center">
-        		<p>Are you sure you want to delete the gig '{{ gig.act_name }}'?</p>
-                <input type="submit" value="Yes" class="btn btn-danger btn-sm btn-margin-right"/>
-                <input type="submit" name="cancel" value="Cancel" class="btn btn-default btn-sm"/>
-            </div>
+            <hr/>
+        	<p>Are you sure you want to delete the gig '{{ gig.act_name }}'?</p>
+            <input type="submit" value="Yes" class="btn btn-danger btn-sm btn-margin-right"/>
+            <input type="submit" name="cancel" value="Cancel" class="btn btn-default btn-sm"/>
         </form>
     </div>
 </div>
