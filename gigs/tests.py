@@ -66,6 +66,54 @@ class IndexViewTests(TestCase):
         self.assertContains(response, 'Human League')
         self.assertNotContains(response, 'The Cure')
 
+class SummaryViewTests(TestCase):
+
+    def test_summary_no_gigs(self):
+        response = self.client.get(reverse('gigs:summary'))
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'gigs/gigs_summary.html')
+
+    def test_summary_with_gig(self):
+        _add_gig(
+            'Human League', 
+            'https://m.ticketmaster.co.uk/event/1F004F828CF62BFB', 
+            'Colston Hall', '19:00', timezone.now(), 'Vivo',
+            'David Turnbull Jon Wilson')
+
+        response = self.client.get(reverse('gigs:summary'))
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'gigs/gigs_summary.html')
+
+        self.assertContains(response, 'Human League')
+
+    def test_summary_with_old_gig(self):
+        # add a gig that should be shown
+        _add_gig(
+            'Human League', 
+            'https://m.ticketmaster.co.uk/event/1F004F828CF62BFB', 
+            'Colston Hall', '19:00', 
+            timezone.now()  - timedelta(days=settings.FILTER_DAYS-1), 
+            'Vivo', 'David Turnbull Jon Wilson')
+
+        # add a gig that should not be shown
+        _add_gig(
+            'The Cure', 
+            'https://m.ticketmaster.co.uk/event/1F004F828CF62BFB', 
+            'The Louisiana', '19:00', 
+            timezone.now() - timedelta(days=settings.FILTER_DAYS), 
+            'The Hatchet', 'David Turnbull Jon Wilson')
+
+        # there will still be two gigs on the database 
+        # but one will be filtered out
+        self.assertEqual(Gig.objects.count(), 2)
+
+        response = self.client.get(reverse('gigs:summary'))
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'gigs/gigs_summary.html')
+
+        self.assertContains(response, 'Human League')
+        self.assertNotContains(response, 'The Cure')
+
 class AddViewTests(TestCase):
 
     def test_adding_a_gig_screen(self):
@@ -171,19 +219,27 @@ class DeleteViewTests(TestCase):
         self.assertTemplateUsed(response, 'gigs/delete_gig.html')
 
     def test_deleting_a_gig_save(self):
+        # check we only delete one entry and it is the correct one!
         _add_gig(
             'Human League', 
             'https://m.ticketmaster.co.uk/event/1F004F828CF62BFB', 
             'Colston Hall', '19:00', timezone.now(),
             'Home', 'David Turnbull Jon Wilson')
+
+        _add_gig(
+            'The Cure', 
+            'https://m.ticketmaster.co.uk/event/1F004F828CF62BFB', 
+            'Colston Hall', '18:00', timezone.now(),
+            'Home', 'David Turnbull Jon Wilson')
         gig = Gig.objects.first()
 
-        self.assertEqual(Gig.objects.count(), 1)
+        self.assertEqual(Gig.objects.count(), 2)
         response = self.client.post(reverse('gigs:delete_gig', 
                                     kwargs={'pk': gig.id}), follow=True)
         self.assertTemplateUsed(response, 'gigs/index.html')
         self.assertEqual(response.status_code, 200)  
-        self.assertEqual(Gig.objects.count(), 0)
+        self.assertEqual(Gig.objects.count(), 1)
+        self.assertQuerysetEqual(response.context['gig_list'],['<Gig: The Cure>'])
 
     def test_deleting_a_gig_cancel(self):
         _add_gig(
