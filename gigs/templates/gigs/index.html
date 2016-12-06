@@ -1,23 +1,17 @@
 {% extends "base.html" %}
 
-{% block header %}
-<div class="page-header">
-    <h1>Goodgym Giggers</h1>
-    <p>This is an <strong>unofficial</strong> Goodgym gig planning site and is in no way affiliated with goodgym.org.</p>
-</div>
+{% block navigation %}
+<ul class="nav nav-tabs">
+  <li role="presentation" class="active"><a href="{% url 'gigs:index' %}">Home</a></li>
+  <li role="presentation"><a href="{% url 'gigs:summary' %}">Summary</a></li>
+  <li role="presentation"><a href="{% url 'gigs:add_gig' %}">Add a gig</a></li>
+</ul>
 {% endblock %}
 
 {% block content %}
-<div class="row row--margin-bottom">
-    <div class="col-xs-12">
-        <form action="{% url 'gigs:add_gig' %}" method="get" class="form-align">
-            <input type="submit" value="Add a gig" class="btn btn-warning"/>
-        </form>
-    </div>
-</div>
 {% if gig_list %}
     {% for gig in gig_list %}
-    <div class="row">
+    <div class="row row--margin-top">
         <div class="col-xs-12">
             <div class="panel panel-default">
                 <div class="panel-heading">
