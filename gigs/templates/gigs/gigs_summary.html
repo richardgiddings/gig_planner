@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block navigation %}
+<ul class="nav nav-tabs">
+  <li role="presentation"><a href="{% url 'gigs:index' %}">Home</a></li>
+  <li role="presentation" class="active"><a href="{% url 'gigs:summary' %}">Summary</a></li>
+  <li role="presentation"><a href="{% url 'gigs:add_gig' %}">Add a gig</a></li>
+</ul>
+{% endblock %}
+
+{% block content %}
+    {% if gig_list %}
+        {% regroup gig_list by gig_date|date:"Y" as gigs_by_year %}
+                {% for gig_years in gigs_by_year %}
+                    <h4>{{ gig_years.grouper }}</h4>
+                    {% regroup gig_years.list by gig_date|date:"F" as gigs_by_month %}
+                    {% for gig_months in gigs_by_month %}
+                        <h5>{{ gig_months.grouper }}</h5>
+                        {% regroup gig_months.list by gig_date|date:"jS" as gigs_by_day %}
+                        {% for gig_days in gigs_by_day %}
+                            <table class="table table-condensed">
+                                <thead>
+                                    <tr>
+                                        <th>{{ gig_days.grouper }}</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                {% for gig in gig_days.list %}
+                                    <tr>
+                                        <td>{{ gig.act_name }} at {{ gig.gig_time|date:"g:i a" }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        {% endfor %}
+                    {% endfor %}
+                {% endfor %}
+    {% else %}
+        <div class="row">
+            <div class="col-xs-12">There are no gigs to display.</div>
+        </div>
+    {% endif %}
+{% endblock %}

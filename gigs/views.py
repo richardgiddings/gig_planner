@@ -11,7 +11,7 @@ from django.conf import settings
 def index(request):
     """
     Return a list of current gigs to the index page.
-    Filter out those more than 7 days old.
+    Filter out those FILTER_DAYS days old or more.
     """
     days_threshold = timezone.now() - timedelta(days=settings.FILTER_DAYS)
     gig_list = Gig.objects.filter(gig_date__gt=days_threshold)
@@ -20,6 +20,21 @@ def index(request):
     return render_to_response("gigs/index.html", { 
             "gig_list": gig_list,
             })
+
+def summary(request):
+    """
+    Return a list of current gigs to a gigs_summary page for
+    a simpler view by month.
+    Filter out those FILTER_DAYS days old or more.
+    """
+    days_threshold = timezone.now() - timedelta(days=settings.FILTER_DAYS)
+    gig_list = Gig.objects.filter(gig_date__gt=days_threshold)
+    gig_list = gig_list.order_by('gig_date')
+
+    return render_to_response("gigs/gigs_summary.html", { 
+            "gig_list": gig_list,
+            })
+
 
 def add_edit_gig(request, gig_id=None, template_name='gigs/gig.html'):
     """
