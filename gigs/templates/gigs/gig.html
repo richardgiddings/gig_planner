@@ -1,5 +1,13 @@
 {% extends "base.html" %}
 
+{% block navigation %}
+<ul class="nav nav-tabs">
+  <li role="presentation"><a href="{% url 'gigs:index' %}">Home</a></li>
+  <li role="presentation"><a href="{% url 'gigs:summary' %}">Summary</a></li>
+  <li role="presentation" class="active"><a href="{% url 'gigs:add_gig' %}">Add a gig</a></li>
+</ul>
+{% endblock %}
+
 {% block content %}
 <div class="row row--margin-top">
     <div class="col-xs-12">
