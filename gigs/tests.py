@@ -5,6 +5,10 @@ from datetime import timedelta
 from django.utils import timezone
 from django.conf import settings
 
+from rest_framework import status
+from rest_framework.test import APITransactionTestCase
+from collections import OrderedDict
+
 """
 Helper method to add a gig.
 """
@@ -16,6 +20,42 @@ def _add_gig(act_name, gig_url, gig_venue, gig_time, gig_date,
                        gig_date=gig_date, meeting_point=meeting_point,
                        attendees=attendees)
 
+
+class APITests(APITransactionTestCase):
+    """
+    Test the Django Rest Framework API.
+    """
+
+    reset_sequences = True
+
+    def setUp(self):
+        _add_gig(
+            'Human League', 
+            'https://m.ticketmaster.co.uk/event/1F004F828CF62BFB', 
+            'Colston Hall', '19:00:00', '2015-01-02', 'Vivo',
+            'David Turnbull Jon Wilson')
+
+    def test_section_viewset(self):
+        """
+        Test API for Gigs retrieval.
+        """
+        response = self.client.get('/api/gigs/')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data, OrderedDict([
+             ('count', 1), 
+             ('next', None), 
+             ('previous', None), 
+             ('results', [OrderedDict([
+                    ('url', 'http://testserver/api/gigs/1/'), 
+                    ('act_name', 'Human League'),
+                    ('gig_url', 'https://m.ticketmaster.co.uk/event/1F004F828CF62BFB'),
+                    ('gig_venue', 'Colston Hall'),
+                    ('gig_time', '19:00:00'),
+                    ('gig_date', '2015-01-02'),
+                    ('meeting_point', 'Vivo'),
+                    ('attendees', 'David Turnbull Jon Wilson')
+            ])])
+        ]))
 
 class IndexViewTests(TestCase):
 

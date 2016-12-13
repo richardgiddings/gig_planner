@@ -8,6 +8,16 @@ from datetime import timedelta
 from django.utils import timezone
 from django.conf import settings
 
+from rest_framework import viewsets
+from .serializers import GigSerializer
+
+class GigsViewSet(viewsets.ModelViewSet):
+    """
+    Django Rest Framweork view for gigs. 
+    """
+    queryset = Gig.objects.order_by('id')
+    serializer_class = GigSerializer
+
 def index(request):
     """
     Return a list of current gigs to the index page.
