@@ -11,3 +11,4 @@ Currently requires:
 - bootstrap3_datetime https://github.com/nkunihiko/django-bootstrap3-datetimepicker
 - pytz
 - djangorestframework
+- djangorestframework-jsonp (for padded json)
