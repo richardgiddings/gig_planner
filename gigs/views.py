@@ -11,12 +11,33 @@ from django.conf import settings
 from rest_framework import viewsets
 from .serializers import GigSerializer
 
+from django.core.mail import EmailMessage
+
+import sys
+import threading
+
 class GigsViewSet(viewsets.ModelViewSet):
     """
     Django Rest Framweork view for gigs. 
     """
     queryset = Gig.objects.order_by('id')
     serializer_class = GigSerializer
+
+class EmailThread(threading.Thread):
+    """
+    Setup email functionality to bcc messages
+    as a thread.
+    """
+    def __init__(self, subject, body, bcc_list):
+        self.subject = subject
+        self.body = body
+        self.bcc_list = bcc_list
+        threading.Thread.__init__(self)
+
+    def run(self):
+        msg = EmailMessage(subject=self.subject, body=self.body, 
+                           to=[settings.DEFAULT_FROM_EMAIL], bcc=self.bcc_list)
+        msg.send()
 
 def index(request):
     """
@@ -45,7 +66,6 @@ def summary(request):
             "gig_list": gig_list,
             })
 
-
 def add_edit_gig(request, gig_id=None, template_name='gigs/gig.html'):
     """
     Add/Edit gigs.
@@ -62,6 +82,26 @@ def add_edit_gig(request, gig_id=None, template_name='gigs/gig.html'):
     if request.POST:
         if form.is_valid():
             form.save()
+
+            # send email to people named in settings
+            subject = 'Goodgym Giggers'
+            if gig_id:
+                body = (
+                    'Someone has made a change to the "{}" gig.\n\n'
+                    'See what was changed at {}.'
+                    ).format(form.cleaned_data.get('act_name'),
+                             settings.WEBSITE)
+            else:
+                body = (
+                    'Someone has added "{}" to the gig planner.\n\n'
+                    'Check it out at {}.'
+                    ).format(form.cleaned_data.get('act_name'),
+                             settings.WEBSITE)
+            try:
+                EmailThread(subject, body, settings.BCC_LIST).start()
+            except Exception as detail:
+                print >> sys.stderr, detail             
+
             return HttpResponseRedirect(reverse('gigs:index'))
 
     return render(request, template_name, context={'form': form})
@@ -78,4 +118,11 @@ class GigDelete(DeleteView):
         if "cancel" in request.POST:
             return HttpResponseRedirect(reverse('gigs:index'))
         else:
+            self.object = self.get_object()
+            try:
+                EmailThread('Goodgym Giggers', 
+                            'Gig "{}" deleted'.format(self.object.act_name), 
+                            settings.BCC_LIST).start()
+            except Exception as detail:
+                print >> sys.stderr, detail 
             return super(GigDelete, self).post(request, *args, **kwargs)
